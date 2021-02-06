@@ -944,23 +944,12 @@ void wifi_manager( void * pvParameters ){
 
 	/* DHCP AP configuration */
 	esp_netif_dhcps_stop(esp_netif_ap); /* DHCP client/server must be stopped before setting new IP information. */
-	esp_netif_ip_info_t ap_ip_info;
-	memset(&ap_ip_info, 0x00, sizeof(ap_ip_info));
-	inet_pton(AF_INET, DEFAULT_AP_IP, &ap_ip_info.ip);
-	inet_pton(AF_INET, DEFAULT_AP_GATEWAY, &ap_ip_info.gw);
-	inet_pton(AF_INET, DEFAULT_AP_NETMASK, &ap_ip_info.netmask);
-	ESP_ERROR_CHECK(esp_netif_set_ip_info(esp_netif_ap, &ap_ip_info));
-	ESP_ERROR_CHECK(esp_netif_dhcps_start(esp_netif_ap));
-
-	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
-	ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &ap_config));
-	ESP_ERROR_CHECK(esp_wifi_set_bandwidth(WIFI_IF_AP, wifi_settings.ap_bandwidth));
-	ESP_ERROR_CHECK(esp_wifi_set_ps(wifi_settings.sta_power_save));
-
 
 	/* by default the mode is STA because wifi_manager will not start the access point unless it has to! */
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 	ESP_ERROR_CHECK(esp_wifi_start());
+
+	ESP_ERROR_CHECK(esp_wifi_set_ps(wifi_settings.sta_power_save));
 
 	/* start http server */
 	http_app_start(false);
@@ -1211,7 +1200,22 @@ void wifi_manager( void * pvParameters ){
 			case WM_ORDER_START_AP:
 				ESP_LOGI(TAG, "MESSAGE: ORDER_START_AP");
 
+				esp_netif_dhcps_stop(esp_netif_ap); /* DHCP client/server must be stopped before setting new IP information. */
+				esp_netif_ip_info_t ap_ip_info;
+				memset(&ap_ip_info, 0x00, sizeof(ap_ip_info));
+				inet_pton(AF_INET, DEFAULT_AP_IP, &ap_ip_info.ip);
+				inet_pton(AF_INET, DEFAULT_AP_GATEWAY, &ap_ip_info.gw);
+				inet_pton(AF_INET, DEFAULT_AP_NETMASK, &ap_ip_info.netmask);
+				ESP_ERROR_CHECK(esp_netif_set_ip_info(esp_netif_ap, &ap_ip_info));
+				ESP_ERROR_CHECK(esp_netif_dhcps_start(esp_netif_ap));
+
 				ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
+				ESP_LOGI(TAG, "wifi mode");
+				ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &ap_config));
+				ESP_LOGI(TAG, "wifi config");
+				ESP_ERROR_CHECK(esp_wifi_set_bandwidth(WIFI_IF_AP, wifi_settings.ap_bandwidth));
+				ESP_LOGI(TAG, "wifi bandwidth");
+				ESP_LOGI(TAG, "AP configured");
 
 				/* restart HTTP daemon */
 				http_app_stop();
