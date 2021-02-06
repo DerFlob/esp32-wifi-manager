@@ -910,7 +910,7 @@ void wifi_manager( void * pvParameters ){
 	/* default wifi config */
 	wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
 	ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_config));
-	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH));
 
 	/* event handler for the connection */
     esp_event_handler_instance_t instance_wifi_event;
