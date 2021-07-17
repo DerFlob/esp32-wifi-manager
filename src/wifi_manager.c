@@ -1046,17 +1046,18 @@ void wifi_manager( void * pvParameters ){
 				}
 
 				uxBits = xEventGroupGetBits(wifi_manager_event_group);
-				if( ! (uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT) ){
-					/* update config to latest and attempt connection */
-					ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, wifi_manager_get_wifi_sta_config()));
-
-					/* if there is a wifi scan in progress abort it first
-					   Calling esp_wifi_scan_stop will trigger a SCAN_DONE event which will reset this bit */
-					if(uxBits & WIFI_MANAGER_SCAN_BIT){
-						esp_wifi_scan_stop();
-					}
-					ESP_ERROR_CHECK(esp_wifi_connect());
-				}
+				if((uxBits & WIFI_MANAGER_WIFI_CONNECTED_BIT)) {
+					ESP_ERROR_CHECK(esp_wifi_disconnect());
+				} 
+				
+				/* update config to latest and attempt connection */
+				ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, wifi_manager_get_wifi_sta_config()));
+				
+				/* if there is a wifi scan in progress abort it first Calling
+				 * esp_wifi_scan_stop will trigger a SCAN_DONE event which will
+				 * reset this bit */
+				if(uxBits & WIFI_MANAGER_SCAN_BIT){ esp_wifi_scan_stop(); }
+				ESP_ERROR_CHECK(esp_wifi_connect());
 
 				/* callback */
 				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
